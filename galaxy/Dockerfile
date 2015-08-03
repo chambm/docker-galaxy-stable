@@ -6,6 +6,30 @@ FROM toolshed/requirements
 
 MAINTAINER Björn A. Grüning, bjoern.gruening@gmail.com
 
+ENV GALAXY_RELEASE=release_15.05_docker \
+GALAXY_REPO=https://github.com/jmchilton/galaxy/ \
+GALAXY_ROOT=/galaxy-central \
+GALAXY_CONFIG_DIR=/etc/galaxy
+
+ENV GALAXY_CONFIG_FILE=$GALAXY_CONFIG_DIR/galaxy.ini \
+GALAXY_CONFIG_JOB_CONFIG_FILE=$GALAXY_CONFIG_DIR/job_conf.xml \
+GALAXY_CONFIG_JOB_METRICS_CONFIG_FILE=$GALAXY_CONFIG_DIR/job_metrics_conf.xml \
+GALAXY_VIRTUALENV=/home/galaxy/venv \
+GALAXY_USER=galaxy \
+GALAXY_UID=1450 \
+GALAXY_GID=1450 \
+GALAXY_POSTGRES_UID=1550 \
+GALAXY_POSTGRES_GID=1550 \
+GALAXY_HOME=/home/galaxy \
+GALAXY_DEFAULT_ADMIN_USER=admin@galaxy.org \
+GALAXY_DEFAULT_ADMIN_PASSWORD=admin \
+GALAXY_DEFAULT_ADMIN_KEY=admin \
+EXPORT_DIR=/export
+
+# Create the postgres user before apt-get does (with the configured UID/GID) to facilitate sharing /export/postgresql with non-Linux hosts
+RUN groupadd -r postgres -g $GALAXY_POSTGRES_GID && \
+    adduser --system --quiet --home /var/lib/postgresql --no-create-home --shell /bin/bash --gecos "" --uid $GALAXY_POSTGRES_UID --gid $GALAXY_POSTGRES_GID postgres
+
 # * Make sure the package repository is up to date
 # * Install all requirements that are recommend by the Galaxy project
 # * Enable the @natefoo magic
@@ -24,23 +48,6 @@ RUN apt-get -qq update && apt-get install --no-install-recommends -y apt-transpo
     apt-get purge -y software-properties-common && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENV GALAXY_RELEASE=release_15.05_docker \
-GALAXY_REPO=https://github.com/jmchilton/galaxy/ \
-GALAXY_ROOT=/galaxy-central \
-GALAXY_CONFIG_DIR=/etc/galaxy
-
-ENV GALAXY_CONFIG_FILE=$GALAXY_CONFIG_DIR/galaxy.ini \
-GALAXY_CONFIG_JOB_CONFIG_FILE=$GALAXY_CONFIG_DIR/job_conf.xml \
-GALAXY_CONFIG_JOB_METRICS_CONFIG_FILE=$GALAXY_CONFIG_DIR/job_metrics_conf.xml \
-GALAXY_VIRTUALENV=/home/galaxy/venv \
-GALAXY_USER=galaxy \
-GALAXY_UID=1450 \
-GALAXY_GID=1450 \
-GALAXY_HOME=/home/galaxy \
-GALAXY_DEFAULT_ADMIN_USER=admin@galaxy.org \
-GALAXY_DEFAULT_ADMIN_PASSWORD=admin \
-GALAXY_DEFAULT_ADMIN_KEY=admin \
-EXPORT_DIR=/export
 
 RUN groupadd -r $GALAXY_USER -g $GALAXY_GID && \
     useradd -u $GALAXY_UID -r -g $GALAXY_USER -d $GALAXY_HOME -c "Galaxy user" $GALAXY_USER && \
