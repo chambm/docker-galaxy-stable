@@ -11,11 +11,7 @@ MAINTAINER Björn A. Grüning, bjoern.gruening@gmail.com
 # * Enable the @natefoo magic
 # Web server infrastructure matching usegalaxy.org - supervisor, uwsgi, and nginx.
 
-ENV GALAXY_RELEASE=release_15.07 \
-GALAXY_REPO=https://github.com/galaxyproject/galaxy \
-GALAXY_ROOT=/galaxy-central \
-GALAXY_CONFIG_DIR=/etc/galaxy
-
+ENV GALAXY_CONFIG_DIR=/etc/galaxy
 ENV GALAXY_CONFIG_FILE=$GALAXY_CONFIG_DIR/galaxy.ini \
 GALAXY_CONFIG_JOB_CONFIG_FILE=$GALAXY_CONFIG_DIR/job_conf.xml \
 GALAXY_CONFIG_JOB_METRICS_CONFIG_FILE=$GALAXY_CONFIG_DIR/job_metrics_conf.xml \
@@ -47,6 +43,10 @@ RUN apt-get -qq update && apt-get install --no-install-recommends -y apt-transpo
     nano nmap lynx vim curl python-pip python-gnuplot python-rpy2 && \
     apt-get purge -y software-properties-common && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV GALAXY_RELEASE=dev \
+GALAXY_REPO=https://github.com/chambm/galaxy \
+GALAXY_ROOT=/galaxy-central
 
 RUN groupadd -r $GALAXY_USER -g $GALAXY_GID && \
     useradd -u $GALAXY_UID -r -g $GALAXY_USER -d $GALAXY_HOME -c "Galaxy user" $GALAXY_USER && \
