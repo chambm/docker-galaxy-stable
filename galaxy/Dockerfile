@@ -38,7 +38,7 @@ RUN apt-get -qq update && apt-get install --no-install-recommends -y apt-transpo
     apt-add-repository -y ppa:galaxyproject/nginx && \
     apt-get update -qq && apt-get upgrade -y && \
     apt-get install --no-install-recommends -y mercurial python-psycopg2 postgresql-9.3 sudo samtools python-virtualenv wget \
-    nginx-extras=1.4.6-1ubuntu3.3ppa1 nginx-common=1.4.6-1ubuntu3.3ppa1 uwsgi uwsgi-plugin-python supervisor lxc-docker-1.4.1 slurm-llnl slurm-llnl-torque libswitch-perl \
+    nginx-extras=1.4.6-1ubuntu3.3ppa1 nginx-common=1.4.6-1ubuntu3.3ppa1 uwsgi uwsgi-plugin-python supervisor lxc-docker-1.7.1 slurm-llnl slurm-llnl-torque libswitch-perl \
     slurm-drmaa-dev proftpd proftpd-mod-pgsql libyaml-dev nodejs-legacy npm aufs-tools ansible \
     nano nmap lynx vim curl python-pip python-gnuplot python-rpy2 && \
     apt-get purge -y software-properties-common && \
@@ -76,6 +76,7 @@ RUN ansible-playbook /tmp/ansible/provision.yml \
     --extra-vars galaxy_job_conf_path=$GALAXY_CONFIG_JOB_CONFIG_FILE \
     --extra-vars galaxy_job_metrics_conf_path=$GALAXY_CONFIG_JOB_METRICS_CONFIG_FILE \
     --extra-vars supervisor_manage_slurm="" \
+    --extra-vars supervisor_manage_nodeproxy="" \
     --tags=galaxyextras -c local && \
     apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -94,6 +95,8 @@ RUN mkdir $GALAXY_ROOT/tool_deps
 
 # Fetching all Galaxy python dependencies
 RUN . $GALAXY_VIRTUALENV/bin/activate && python scripts/fetch_eggs.py -c $GALAXY_CONFIG_FILE && python scripts/fetch_eggs.py -e drmaa -c $GALAXY_CONFIG_FILE
+# Installing latest version of setuptools
+RUN . $GALAXY_VIRTUALENV/bin/activate && pip install setuptools --upgrade
 
 # Updating genome informations from UCSC
 #RUN export GALAXY=/galaxy-central && sh ./cron/updateucsc.sh.sample
